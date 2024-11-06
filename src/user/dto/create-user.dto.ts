@@ -11,4 +11,9 @@ export class CreateUserDto implements Omit<User, 'id'> {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @MinLength(6)
+  @IsString()
+  @IsNotEmpty()
+  confirmationPassword: string;
 }
