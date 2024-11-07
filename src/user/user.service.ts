@@ -3,29 +3,17 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  // eslint-disable-next-line prettier/prettier
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(payload: CreateUserDto) {
-    if (payload.password !== payload.confirmationPassword) {
-      throw new BadRequestException('As senhas não coincidem');
-    }
-    const userAlreadyExists = await this.findByEmail(payload.email);
-    if (userAlreadyExists) {
-      throw new BadRequestException('Usuário já cadastrado');
-    }
-    const hashPassword = await bcrypt.hash(payload.password, 10);
+  async create({ email, password }: { email: string; password: string }) {
     const user = await this.prisma.user.create({
       data: {
-        email: payload.email,
-        password: hashPassword,
+        email,
+        password,
       },
       select: { id: true, email: true },
     });
@@ -57,7 +45,7 @@ export class UserService {
     return await this.prisma.user.findUnique({ where: { email } });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: any) {
     const user = this.prisma.user.update({
       where: { id },
       data: updateUserDto,
